@@ -5,13 +5,17 @@ var gl = canvas.getContext("webgl", {stencil: true, 'preserveDrawingBuffer': tru
 
 var vertexShader =
     "attribute vec4 a_position;" +
+    "attribute vec4 aVertexColor;" +
     "uniform mat4 p_matrix;" +
+    "varying lowp vec4 vColor;" +
     "void main() {" +
     "  gl_Position = p_matrix * vec4(a_position);" +
+    "  vColor = aVertexColor; " +
     "}";
 var fragmentShader =
+    "varying lowp vec4 vColor;" +
     "void main() {" +
-    "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);" +
+    "  gl_FragColor = vColor;" +
     "}";
 
 function addShader(type, source) {
@@ -34,6 +38,9 @@ if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 }
 gl.useProgram(program);
 
+var aVertexColor = gl.getAttribLocation(program, 'aVertexColor');
+gl.enableVertexAttribArray(aVertexColor);
+
 var aPosition = gl.getUniformLocation(program, "a_position");
 var uMatrix = gl.getUniformLocation(program, "p_matrix");
 var m = new Float32Array([2 / 1280, 0, 0, 0, 0, 2 / 800, 0, 0, 0, 0, 1, 0, -1, -1, 0, 1]);
@@ -48,6 +55,10 @@ var ballX = 640;
 var ballY = 400;
 var ballVX = (Math.random() < 0.5) ? 6 : -6;
 var ballVY = Math.random() * 8 - 4;
+var red = Math.random();
+var green = Math.random();
+var blue = Math.random();
+var current = 0;
 
 function update(timeStamp) {
     ballX += ballVX;
@@ -92,7 +103,23 @@ function update(timeStamp) {
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.enableVertexAttribArray(aPosition);
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+    
+    gl.disableVertexAttribArray(aVertexColor);
+    if (timeStamp - current >= 1000)
+    {
+        current = timeStamp;
+        red = Math.random();
+        green = Math.random();
+        blue = Math.random();
+        if (red == 0.0 && green == 0.0 && blue == 0.0)
+        {
+            red = green = blue = 1.0;
+        }
+    }
+    gl.vertexAttrib4f(aVertexColor, red, green, blue, 1);
+
     drawRect(ballX, ballY, 10, 10);
+    gl.vertexAttrib4f(aVertexColor, 1, 1, 1, 1);
     drawRect(paddle1X, paddle1Y, 10, 100);
     drawRect(paddle2X, paddle2Y, 10, 100);
     requestAnimationFrame(update);
