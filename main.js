@@ -1,6 +1,10 @@
 "use strict";
+var width = window.innerWidth - 5;
+var height = window.innerHeight - 5;
 
 var canvas = document.getElementById("gameCanvas");
+    canvas.width  = width;
+    canvas.height = height;
 var gl = canvas.getContext("webgl", {stencil: true, 'preserveDrawingBuffer': true, 'antialias': true, 'alpha': false});
 
 var vertexShader =
@@ -43,16 +47,16 @@ gl.enableVertexAttribArray(aVertexColor);
 
 var aPosition = gl.getUniformLocation(program, "a_position");
 var uMatrix = gl.getUniformLocation(program, "p_matrix");
-var m = new Float32Array([2 / 1280, 0, 0, 0, 0, 2 / 800, 0, 0, 0, 0, 1, 0, -1, -1, 0, 1]);
+var m = new Float32Array([2 / width, 0, 0, 0, 0, 2 / height, 0, 0, 0, 0, 1, 0, -1, -1, 0, 1]);
 gl.uniformMatrix4fv(uMatrix, false, m);
 var vertexBuffer = gl.createBuffer();
 
 var paddle1X = 20;
-var paddle1Y = 400;
-var paddle2X = 1260;
-var paddle2Y = 400;
-var ballX = 640;
-var ballY = 400;
+var paddle1Y = height/3;
+var paddle2X = width - 20;
+var paddle2Y = height/3;
+var ballX = width / 2;
+var ballY = height/3;
 var ballVX = (Math.random() < 0.5) ? 6 : -6;
 var ballVY = Math.random() * 8 - 4;
 var red = Math.random();
@@ -63,22 +67,22 @@ var current = 0;
 function update(timeStamp) {
     ballX += ballVX;
     ballY += ballVY;
-    if (ballY < 10 || ballY > 790) {
+    if (ballY < 10 || ballY > height -10) {
         ballVY *= -1;
     }
     // TODO is this /too/ stupid to not be using the paddleX position here?
-    if (Math.abs(ballY - paddle1Y) < 55 && (ballX > 15 && ballX < 25)) {
+    if (Math.abs(ballY - paddle1Y) < 55 && (ballX <= paddle1X+10)) {
         ballVX *= -1.075;
         ballVY = (ballY - paddle1Y) / 5;
     }
-    if (Math.abs(ballY - paddle2Y) < 55 && (ballX > 1255 && ballX < 1265)) {
+    if (Math.abs(ballY - paddle2Y) < 55 && (ballX >= paddle2X)) {
         ballVX *= -1.075;
         ballVY = (ballY - paddle2Y) / 5;
     }
 
-    if (ballX < 0 || ballX > 1280) {
-        ballX = 640;
-        ballY = 400;
+    if (ballX < 0 || ballX > width) {
+        ballX = width / 2;;
+        ballY = height/3;;
         ballVX = (Math.random() < 0.5) ? 6 : -6;
         ballVY = Math.random() * 8 - 4;
     }
@@ -94,8 +98,8 @@ function update(timeStamp) {
     if (paddle2Y < 50) {
         paddle2Y = 50;
     }
-    if (paddle2Y > 750) {
-        paddle2Y = 750;
+    if (paddle2Y > height - 50) {
+        paddle2Y = height - 50;
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -147,8 +151,8 @@ function onMouseMove(e) {
     if (paddle1Y < 50) {
         paddle1Y = 50;
     }
-    if (paddle1Y > 750) {
-        paddle1Y = 750;
+    if (paddle1Y > height-50) {
+        paddle1Y = height-50;
     }
 }
 
