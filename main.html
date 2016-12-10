@@ -4,12 +4,25 @@
             margin: 0;
             padding: 0;
         }
+        #gameCanvas {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+        }
+
+        #textCanvas {
+            position: absolute;
+            left: 50px;
+            top: 0px;
+            z-index: 2;
+        }
     </style>
 </head>
 <html>
 <head><title></title></head>
 <body>
 <canvas id="gameCanvas" width=1280 height=800></canvas>
+<canvas id="textCanvas" width=1180 height=800></canvas>
 <script src="./main.js"></script>
 </body>
 </html>

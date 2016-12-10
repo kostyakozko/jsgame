@@ -7,6 +7,11 @@ var canvas = document.getElementById("gameCanvas");
     canvas.height = height;
 var gl = canvas.getContext("webgl", {stencil: true, 'preserveDrawingBuffer': true, 'antialias': true, 'alpha': false});
 
+var textCanvas = document.getElementById("textCanvas");
+    textCanvas.width  = width - 100; //TODO: should it be some constant instead of magic numbers?
+    textCanvas.height = height;
+var textCtx = textCanvas.getContext("2d");
+
 var vertexShader =
     "attribute vec4 a_position;" +
     "attribute vec4 aVertexColor;" +
@@ -64,7 +69,19 @@ var green = Math.random();
 var blue = Math.random();
 var current = 0;
 
+var pause = false;
+
 function update(timeStamp) {
+    textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
+    if (pause == true) {
+        textCtx.textAlign = "center";
+        textCtx.fillStyle = "#ffffff";
+        textCtx.font = "30pt Arial";
+        var txt = "Game Paused";
+        textCtx.fillText(txt, (width - textCtx.measureText(txt).width)/2, textCtx.canvas.height/2);
+        requestAnimationFrame(update);
+        return;
+    }
     ballX += ballVX;
     ballY += ballVY;
     if (ballY < 10 || ballY > height -10) {
@@ -81,8 +98,8 @@ function update(timeStamp) {
     }
 
     if (ballX < 0 || ballX > width) {
-        ballX = width / 2;;
-        ballY = height/3;;
+        ballX = width / 2;
+        ballY = height/3;
         ballVX = (Math.random() < 0.5) ? 6 : -6;
         ballVY = Math.random() * 8 - 4;
     }
@@ -156,5 +173,15 @@ function onMouseMove(e) {
     }
 }
 
+function onKeyPress(e) {
+    var char = e.which || e.keyCode;
+    //let's pause on pressing space button
+    if (char == 0x20) {
+        pause = !pause;
+    }
+}
+
 canvas.addEventListener("mousemove", onMouseMove, false);
+textCanvas.addEventListener("mousemove", onMouseMove, false);
+window.addEventListener("keydown", onKeyPress, false ); 
 update();
