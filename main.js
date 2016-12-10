@@ -11,6 +11,9 @@ var textCanvas = document.getElementById("textCanvas");
     textCanvas.width  = width - 100; //TODO: should it be some constant instead of magic numbers?
     textCanvas.height = height;
 var textCtx = textCanvas.getContext("2d");
+    textCtx.textAlign = "center";
+    textCtx.fillStyle = "#ffffff";
+    textCtx.font = "30pt Arial";
 
 var vertexShader =
     "attribute vec4 a_position;" +
@@ -70,13 +73,15 @@ var blue = Math.random();
 var current = 0;
 
 var pause = false;
-
+var scoreTxt = "Score:";
+var pl1Score = 0;
+var pl2Score = 0;
+var fail = false;
 function update(timeStamp) {
     textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
+    scoreTxt = "Score: " + pl1Score + "-" + pl2Score;
+    textCtx.fillText(scoreTxt, (width - textCtx.measureText(scoreTxt).width)/2, 50);
     if (pause == true) {
-        textCtx.textAlign = "center";
-        textCtx.fillStyle = "#ffffff";
-        textCtx.font = "30pt Arial";
         var txt = "Game Paused";
         textCtx.fillText(txt, (width - textCtx.measureText(txt).width)/2, textCtx.canvas.height/2);
         requestAnimationFrame(update);
@@ -97,11 +102,22 @@ function update(timeStamp) {
         ballVY = (ballY - paddle2Y) / 5;
     }
 
-    if (ballX < 0 || ballX > width) {
+    if (ballX < 0) {
+        ++pl2Score;
+        fail = true;
+    }
+
+    if (ballX > width) {
+        ++pl1Score;
+        fail = true;
+    }
+
+    if (fail == true) {
         ballX = width / 2;
         ballY = height/3;
         ballVX = (Math.random() < 0.5) ? 6 : -6;
         ballVY = Math.random() * 8 - 4;
+        fail = false;
     }
 
     var dy = ballY - paddle2Y;
