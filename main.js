@@ -77,6 +77,13 @@ var scoreTxt = "Score:";
 var pl1Score = 0;
 var pl2Score = 0;
 var fail = false;
+var desiredFps = 60;
+var second = 1000;
+var invSecond = 0.001;
+var lastFrame = 0;
+var delta = 0;
+var rateFix = 1;
+
 function update(timeStamp) {
     textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
     scoreTxt = "Score: " + pl1Score + "-" + pl2Score;
@@ -87,8 +94,21 @@ function update(timeStamp) {
         requestAnimationFrame(update);
         return;
     }
-    ballX += ballVX;
-    ballY += ballVY;
+    
+    if (timeStamp !== undefined)
+    {
+        delta = timeStamp - lastFrame;
+        rateFix = delta * desiredFps * invSecond;
+        console.log(rateFix);
+        lastFrame = timeStamp;
+    }
+    else
+    {
+        rateFix = 1;
+    }
+    ballX += (ballVX * rateFix);
+    ballY += (ballVY * rateFix);
+
     if (ballY < 10 || ballY > height -10) {
         ballVY *= -1;
     }
@@ -142,7 +162,7 @@ function update(timeStamp) {
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
     
     gl.disableVertexAttribArray(aVertexColor);
-    if (timeStamp - current >= 1000)
+    if (timeStamp - current >= second)
     {
         current = timeStamp;
         red = Math.random();
