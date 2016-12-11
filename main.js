@@ -13,7 +13,8 @@ var textCanvas = document.getElementById("textCanvas");
 var textCtx = textCanvas.getContext("2d");
     textCtx.textAlign = "center";
     textCtx.fillStyle = "#ffffff";
-    textCtx.font = "30pt Arial";
+    textCtx.font = Math.max(50, height/20) + "px Arial";
+var gameTop = 50 + Math.max(50, height/20);
 
 var vertexShader =
     "attribute vec4 a_position;" +
@@ -84,32 +85,39 @@ var lastFrame = 0;
 var delta = 0;
 var rateFix = 1;
 
-function update(timeStamp) {
+function drawText(timeStamp) {
     textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
     scoreTxt = "Score: " + pl1Score + "-" + pl2Score;
     textCtx.fillText(scoreTxt, (width - textCtx.measureText(scoreTxt).width)/2, 50);
     if (pause == true) {
         var txt = "Game Paused";
         textCtx.fillText(txt, (width - textCtx.measureText(txt).width)/2, textCtx.canvas.height/2);
-        requestAnimationFrame(update);
-        return;
-    }
-    
-    if (timeStamp !== undefined)
-    {
-        delta = timeStamp - lastFrame;
-        rateFix = delta * desiredFps * invSecond;
-        console.log(rateFix);
         lastFrame = timeStamp;
     }
-    else
+    return pause;
+}
+
+function changeColor(timeStamp) {
+    gl.disableVertexAttribArray(aVertexColor);
+    if (timeStamp - current >= second)
     {
-        rateFix = 1;
+        current = timeStamp;
+        red = Math.random();
+        green = Math.random();
+        blue = Math.random();
+        if (red == 0.0 && green == 0.0 && blue == 0.0)
+        {
+            red = green = blue = 1.0;
+        }
     }
+    gl.vertexAttrib4f(aVertexColor, red, green, blue, 1);
+}
+
+function drawPortrait(timeStamp) {
     ballX += (ballVX * rateFix);
     ballY += (ballVY * rateFix);
 
-    if (ballY < 10 || ballY > height -10) {
+    if (ballY < 10 || ballY > height - gameTop) {
         ballVY *= -1;
     }
     // TODO is this /too/ stupid to not be using the paddleX position here?
@@ -151,8 +159,8 @@ function update(timeStamp) {
     if (paddle2Y < 50) {
         paddle2Y = 50;
     }
-    if (paddle2Y > height - 50) {
-        paddle2Y = height - 50;
+    if (paddle2Y > height - gameTop) {
+        paddle2Y = height - gameTop;
     }
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -160,25 +168,36 @@ function update(timeStamp) {
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.enableVertexAttribArray(aPosition);
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
-    
-    gl.disableVertexAttribArray(aVertexColor);
-    if (timeStamp - current >= second)
-    {
-        current = timeStamp;
-        red = Math.random();
-        green = Math.random();
-        blue = Math.random();
-        if (red == 0.0 && green == 0.0 && blue == 0.0)
-        {
-            red = green = blue = 1.0;
-        }
-    }
-    gl.vertexAttrib4f(aVertexColor, red, green, blue, 1);
-
+        
+    changeColor(timeStamp);
     drawRect(ballX, ballY, 10, 10);
     gl.vertexAttrib4f(aVertexColor, 1, 1, 1, 1);
     drawRect(paddle1X, paddle1Y, 10, 100);
     drawRect(paddle2X, paddle2Y, 10, 100);
+}
+
+function drawLandscape(timeStamp) {
+    
+}
+
+function update(timeStamp) {
+    
+    if (drawText(timeStamp)) {
+       requestAnimationFrame(update);
+       return;
+    }
+    
+    if (timeStamp !== undefined)
+    {
+        delta = timeStamp - lastFrame;
+        rateFix = delta * desiredFps * invSecond;
+        lastFrame = timeStamp;
+    }
+    else
+    {
+        rateFix = 1;
+    }
+    drawPortrait(timeStamp);
     requestAnimationFrame(update);
 }
 
@@ -200,12 +219,12 @@ function drawRect(x, y, w, h) {
 }
 
 function onMouseMove(e) {
-    paddle1Y = 800 - e.pageY;
+    paddle1Y = height - e.pageY;
     if (paddle1Y < 50) {
         paddle1Y = 50;
     }
-    if (paddle1Y > height-50) {
-        paddle1Y = height-50;
+    if (paddle1Y > height-gameTop) {
+        paddle1Y = height-gameTop;
     }
 }
 
